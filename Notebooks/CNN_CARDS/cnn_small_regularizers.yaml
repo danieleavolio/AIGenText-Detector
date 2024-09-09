@@ -1,0 +1,57 @@
+model:
+  model_name: cnn_small_regularizers
+  model_type: CNN
+  model_goal: binary text classification
+  train_epochs: 2
+  model_structure: 
+        _________________________________________________________________
+        Layer (type)                Output Shape              Param #   
+        =================================================================
+        tokenized_dataset (InputLa  [(None, 512)]             0         
+        yer)                                                            
+                                                                        
+        embeddings (Embedding)      (None, 512, 128)          1048576   
+                                                                        
+        reshape_2 (Reshape)         (None, 512, 128, 1)       0         
+                                                                        
+        convolution-1 (Conv2D)      (None, 510, 126, 64)      640       
+                                                                        
+        dropout_4 (Dropout)         (None, 510, 126, 64)      0         
+                                                                        
+        convolution-2 (Conv2D)      (None, 508, 124, 32)      18464     
+                                                                        
+        maxpool1 (MaxPooling2D)     (None, 254, 62, 32)       0         
+                                                                        
+        flatten_2 (Flatten)         (None, 503936)            0         
+                                                                        
+        dense_6 (Dense)             (None, 64)                32251968  
+                                                                        
+        dense_7 (Dense)             (None, 16)                1040      
+                                                                        
+        dense_8 (Dense)             (None, 1)                 17        
+                                                                        
+        =================================================================
+
+  binary_accuracy: ~0.99
+  competition_score: 0.806
+  model_size:
+      Total params: 33320705 (127.11 MB)
+      Trainable params: 33320705 (127.11 MB)
+      Non-trainable params: 0 (0.00 Byte)
+
+  model_code:
+    input_ids = tf.keras.Input(shape=(MAX_LENGTH,), name='tokenized_dataset', dtype='int32')
+    emb1 = keras.layers.Embedding(input_dim,128, input_length=MAX_LENGTH, name="embeddings")(input_ids)
+    reshape = keras.layers.Reshape(( 512, 128,1))(emb1)
+    conv1 = keras.layers.Conv2D(64, 3, activation='leaky_relu', name="convolution-1")(reshape)
+    drp1 = keras.layers.Dropout(0.23)(conv1)
+    conv2 = keras.layers.Conv2D(32, 3, activation='leaky_relu', name="convolution-2")(drp1)
+    maxpool1 = keras.layers.MaxPooling2D(pool_size=(2, 2), padding="same", name="maxpool1") (conv2)
+    flat = keras.layers.Flatten()(maxpool1)
+    dense2 = keras.layers.Dense(64,activation="leaky_relu",  kernel_regularizer='l1_l2')(flat)
+    drp2 = keras.layers.Dropout(0.45)(dense2)
+    dense3 = keras.layers.Dense(16,activation="leaky_relu")(dense2)
+    out = keras.layers.Dense(1,activation="sigmoid")(dense3)
+    
+    model = tf.keras.Model(inputs=input_ids, outputs=out, name="CNN_Model")
+
